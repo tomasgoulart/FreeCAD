@@ -656,13 +656,22 @@ Action* StdCmdToggleClipPlane::createAction()
 void StdCmdToggleClipPlane::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
-    static QPointer<Gui::Dialog::Clipping> clipping = nullptr;
-    if (!clipping) {
+    auto dock = qobject_cast<QDockWidget*>(getMainWindow()->findChild<QDockWidget*>(QStringLiteral("Clipping")));
+    if (dock) {
+        dock->show();
+        dock->raise();
+    }
+    else {
         auto view = qobject_cast<View3DInventor*>(getMainWindow()->activeWindow());
         if (view) {
-            clipping = Gui::Dialog::Clipping::makeDockWidget(view);
-        }
-    }
+            auto clipping = Gui::Dialog::Clipping::makeDockWidget(view);
+            auto dock = qobject_cast<QDockWidget*>(clipping->parentWidget());
+            if(dock) {
+                dock->show();
+                dock->raise();
+            }
+        }  
+    }    
 }
 
 bool StdCmdToggleClipPlane::isActive()

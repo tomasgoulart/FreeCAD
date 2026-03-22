@@ -29,9 +29,11 @@
 #include <QDockWidget>
 #include <QPointer>
 
+#include "Application.h"
 #include "Clipping.h"
 #include "ui_Clipping.h"
 #include "DockWindowManager.h"
+#include "MainWindow.h"
 #include "View3DInventor.h"
 #include "View3DInventorViewer.h"
 
@@ -197,7 +199,10 @@ Clipping* Clipping::makeDockWidget(Gui::View3DInventor* view)
     Gui::DockWindowManager* pDockMgr = Gui::DockWindowManager::instance();
     QDockWidget* dw = pDockMgr->addDockWindow("Clipping", clipping, Qt::LeftDockWidgetArea);
     dw->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dw->show();
+
+    if (auto* mw = Gui::getMainWindow()) {
+        mw->restoreDockWidget(dw);
+    }
 
     return clipping;
 }
@@ -253,10 +258,13 @@ void Clipping::setupConnections()
 
 void Clipping::reject()
 {
-    QDialog::reject();
+    if (Gui::Application::Instance && Gui::Application::Instance->isClosing()) {
+        QDialog::reject();
+        return;
+    }
     auto dw = qobject_cast<QDockWidget*>(parent());
     if (dw) {
-        dw->deleteLater();
+        dw->hide();
     }
 }
 
